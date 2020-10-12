@@ -30,7 +30,7 @@ public class UserServiceImplementation implements UserService{
     @Override
     public User getByUsername(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(username);
-        if(user.isEmpty())
+        if(!user.isPresent())
             throw new UserNotFoundException(username);
         return user.get();
     }
@@ -44,13 +44,25 @@ public class UserServiceImplementation implements UserService{
 
     @Override
     public void update(User user) throws UserNotFoundException {
+        Optional<User> updatedUser = userRepository.findById(user.getUsername()).map(u -> {
+            u.setEmail(user.getEmail());
+            u.setFirstName(user.getFirstName());
+            u.setLastName(user.getLastName());
+            u.setPassword(user.getPassword());
+            return userRepository.save(u);
+        });
+
+        if(updatedUser.isPresent())
+            return;
+
+        throw new UserNotFoundException("User with given username does not exist!");
 
     }
 
     @Override
     public User delete(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(username);
-        if(user.isEmpty())
+        if(!user.isPresent())
             throw new UserNotFoundException(username);
         userRepository.deleteById(username);
         return user.get();

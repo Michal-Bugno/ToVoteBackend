@@ -40,6 +40,12 @@ public class UserController {
         return user;
     }
 
+    @PutMapping
+    public User updateUser(@RequestBody User user) throws UserNotFoundException{
+        userService.update(user);
+        return user;
+    }
+
     @DeleteMapping("/{username}")
     public User deleteUser(@PathVariable String username) throws UserNotFoundException {
         return userService.delete(username);

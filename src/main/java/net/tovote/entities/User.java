@@ -1,6 +1,7 @@
 package net.tovote.entities;
 
 import javax.persistence.*;
+import java.util.List;
 
 
 @Entity
@@ -24,16 +25,24 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_group",
+            joinColumns = @JoinColumn(name = "username"),
+            inverseJoinColumns = @JoinColumn(name = "id"))
+    private List<Group> groups;
+
     public User(){
 
     }
 
-    public User(String username, String email, String password, String firstName, String lastName) {
+    public User(String username, String email, String password, String firstName, String lastName, List<Group> groups) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.groups = groups;
     }
 
 
@@ -75,6 +84,14 @@ public class User {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
     }
 
     @Override

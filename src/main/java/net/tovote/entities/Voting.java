@@ -33,6 +33,7 @@ public class Voting {
     private String description;
 
     @OneToMany(mappedBy = "id")
+
     private List<VotingOption> options;
 
     public Voting(){
