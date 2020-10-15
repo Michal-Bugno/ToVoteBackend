@@ -8,22 +8,25 @@ public class Vote {
 
     @Id
     @GeneratedValue
-    @Column(name = "id", nullable = "false")
+    @Column(name = "id", nullable = false)
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id")
     private Voting voting;
 
-    @Column(name = "representation", nullable = "false")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
+    @Column(name = "representation", nullable = false)
     private String voteRepresentation;
 
     public Vote() {
     }
 
-    public Vote(long id, Voting voting, String representation) {
+    public Vote(long id, Voting voting, String representation, User user) {
         this.id = id;
         this.voting = voting;
+        this.user = user;
         voteRepresentation = representation;
     }
 
@@ -49,5 +52,13 @@ public class Vote {
 
     public void setVoteRepresentation(String voteRepresentation) {
         this.voteRepresentation = voteRepresentation;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

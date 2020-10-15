@@ -4,15 +4,18 @@ package net.tovote.entities;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "voting_options")
 public class VotingOption {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
-    private long id;
+    @Column(name = "voting_option_id", nullable = false)
+    private long votingOptionId;
 
-    @Column(name = "voting")
-    @ManyToOne(FetchType.LAZY)
+    @Column(name = "option_number")
+    private int optionNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     private Voting voting;
 
     @Column(name = "name")
@@ -22,17 +25,18 @@ public class VotingOption {
 
     }
 
-    public VotingOption(long id, String name) {
-        this.id = id;
+    public VotingOption(long id, String name, int optionNumber) {
+        votingOptionId = id;
         this.name = name;
+        this.optionNumber = optionNumber
     }
 
     public long getId() {
-        return id;
+        return votingOptionId;
     }
 
     public void setId(long id) {
-        this.id = id;
+        votingOptionId = id;
     }
 
     public String getName() {

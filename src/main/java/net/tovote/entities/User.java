@@ -25,11 +25,7 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_group",
-            joinColumns = @JoinColumn(name = "username"),
-            inverseJoinColumns = @JoinColumn(name = "id"))
+    @ManyToMany(mappedBy = "users")
     private List<Group> groups;
 
     public User(){

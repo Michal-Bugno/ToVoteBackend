@@ -3,7 +3,6 @@ package net.tovote.entities;
 import net.tovote.enums.VotingType;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -12,11 +11,10 @@ public class Voting {
 
     @Id
     @GeneratedValue
-    @Column(name = "id", nullable = false)
-    private long Id;
+    @Column(name = "voting_id", nullable = false)
+    private long votingId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username")
     private User user;
 
     @Column(name = "start_time_stamp", nullable = false)
@@ -36,12 +34,19 @@ public class Voting {
 
     private List<VotingOption> options;
 
+    @ManyToMany(targetEntity = Group.class, cascade = {CascadeType.ALL})
+    @JoinTable(
+            name = "votings_groups",
+            joinColumns = @JoinColumn(name = "voting_id"),
+            inverseJoinColumns = @JoinColumn(name = "group_id"))
+    private List<Group> groups;
+
     public Voting(){
 
     }
 
     public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, List<VotingOption> options) {
-        Id = id;
+        votingId = id;
         this.user = user;
         this.startTimeStamp = startTimeStamp;
         this.endTimeStamp = endTimeStamp;
@@ -50,12 +55,12 @@ public class Voting {
         this.options = options;
     }
 
-    public long getId() {
-        return Id;
+    public long getVotingId() {
+        return votingId;
     }
 
-    public void setId(long id) {
-        Id = id;
+    public void setVotingId(long votingId) {
+        this.votingId = votingId;
     }
 
     public User getUser() {

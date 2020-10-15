@@ -9,31 +9,38 @@ public class Group {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
-    private long id;
+    @Column(name = "group_id", nullable = false)
+    private long groupId;
 
-    @Column(name = "name", nullable = "false")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @ManyToMany
+    @ManyToMany(targetEntity = User.class, cascade = {CascadeType.ALL})
+    @JoinTable(
+            name = "groups_users",
+            joinColumns = @JoinColumn(name = "group_id"),
+            inverseJoinColumns = @JoinColumn(name = "username"))
     private List<User> users;
+
+    @ManyToMany(mappedBy = "groups")
+    private List<Voting> votings;
 
     public Group() {
     }
 
     public Group(long id, String name, List<User> users) {
-        this.id = id;
+        this.groupId = id;
         this.name = name;
         this.users = users;
     }
 
 
-    public long getId() {
-        return id;
+    public long getGroupId() {
+        return groupId;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setGroupId(long groupId) {
+        this.groupId = groupId;
     }
 
     public String getName() {
