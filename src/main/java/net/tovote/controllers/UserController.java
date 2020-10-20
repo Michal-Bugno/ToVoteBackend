@@ -1,13 +1,13 @@
 package net.tovote.controllers;
 
 import net.tovote.entities.User;
-import net.tovote.exceptions.UserException;
-import net.tovote.exceptions.UserNotFoundException;
-import net.tovote.exceptions.UsernameExistsException;
+import net.tovote.exceptions.*;
 import net.tovote.requests.LoginData;
 import net.tovote.responses.ErrorResponse;
+import net.tovote.security.TokenDecoder;
 import net.tovote.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.AbstractAuditable_;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,6 +39,11 @@ public class UserController {
         return userService.getByUsername(username);
     }
 
+    @GetMapping("/{groupId}")
+    public List<User> getUsersForGroup(@PathVariable long groupId) throws GroupNotFoundException {
+        return userService.getAllForGroup(groupId);
+    }
+
     @PostMapping
     public User addUser(@RequestBody User user) throws UsernameExistsException {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -47,13 +52,17 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) throws UserNotFoundException{
+    public User updateUser(@RequestBody User user, @RequestHeader String token) throws UserNotFoundException, BadAuthorizationException{
+        String subject = TokenDecoder.getUsername(token);
+        if(!subject.equals(user.getUsername()))
+            throw new BadAuthorizationException("Your identity and provided username do not match!");
         userService.update(user);
         return user;
     }
 
-    @DeleteMapping("/{username}")
-    public User deleteUser(@PathVariable String username) throws UserNotFoundException {
+    @DeleteMapping
+    public User deleteUser(@RequestHeader String token) throws UserNotFoundException {
+        String username = TokenDecoder.getUsername(token);
         return userService.delete(username);
     }
 }

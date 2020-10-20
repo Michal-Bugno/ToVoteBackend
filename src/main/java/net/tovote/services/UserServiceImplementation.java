@@ -1,8 +1,11 @@
 package net.tovote.services;
 
+import net.tovote.entities.Group;
 import net.tovote.entities.User;
+import net.tovote.exceptions.GroupNotFoundException;
 import net.tovote.exceptions.UserNotFoundException;
 import net.tovote.exceptions.UsernameExistsException;
+import net.tovote.repositories.GroupRepository;
 import net.tovote.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,10 +19,12 @@ public class UserServiceImplementation implements UserService{
 
 
     private UserRepository userRepository;
+    private GroupRepository groupRepository;
 
     @Autowired
-    public UserServiceImplementation(UserRepository userRepository){
+    public UserServiceImplementation(UserRepository userRepository, GroupRepository groupRepository){
         this.userRepository = userRepository;
+        this.groupRepository = groupRepository;
     }
 
     @Override
@@ -66,5 +71,13 @@ public class UserServiceImplementation implements UserService{
         User userToDelete = userRepository.findById(username).get();
         userRepository.delete(userToDelete);
         return userToDelete;
+    }
+
+    @Override
+    public List<User> getAllForGroup(long groupId) throws GroupNotFoundException {
+        if(!groupRepository.existsById(groupId))
+            throw new GroupNotFoundException("Given group does not exist!");
+        List<User> users = groupRepository.findById(groupId).get().getUsers();
+        return users;
     }
 }
