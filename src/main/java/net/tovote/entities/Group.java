@@ -1,5 +1,7 @@
 package net.tovote.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -15,6 +17,7 @@ public class Group {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @JsonIgnore
     @ManyToMany(targetEntity = User.class, cascade = {CascadeType.ALL})
     @JoinTable(
             name = "groups_users",
@@ -22,6 +25,7 @@ public class Group {
             inverseJoinColumns = @JoinColumn(name = "username"))
     private List<User> users;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "groups")
     private List<Voting> votings;
 

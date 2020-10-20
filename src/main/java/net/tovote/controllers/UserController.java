@@ -4,11 +4,14 @@ import net.tovote.entities.User;
 import net.tovote.exceptions.UserException;
 import net.tovote.exceptions.UserNotFoundException;
 import net.tovote.exceptions.UsernameExistsException;
+import net.tovote.requests.LoginData;
 import net.tovote.responses.ErrorResponse;
 import net.tovote.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,10 +21,12 @@ import java.util.List;
 public class UserController {
 
     private UserService userService;
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserController(UserService userService){
+    public UserController(UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder){
         this.userService = userService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @GetMapping
@@ -36,6 +41,7 @@ public class UserController {
 
     @PostMapping
     public User addUser(@RequestBody User user) throws UsernameExistsException {
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         userService.add(user);
         return user;
     }

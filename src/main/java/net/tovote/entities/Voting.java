@@ -1,5 +1,6 @@
 package net.tovote.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.tovote.enums.VotingType;
 
 import javax.persistence.*;
@@ -14,26 +15,31 @@ public class Voting {
     @Column(name = "voting_id", nullable = false)
     private long votingId;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @Column(name = "start_time_stamp", nullable = false)
+    @Column(name = "start_time_stamp")
     private long startTimeStamp;
 
-    @Column(name = "end_time_stamp", nullable = true)
+    @Column(name = "end_time_stamp")
     private long endTimeStamp;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "voting_type", length = 25, nullable = false)
     private VotingType votingType;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "description", nullable = true)
     private String description;
 
-    @OneToMany(mappedBy = "id")
-
+    @JsonIgnore
+    @OneToMany(mappedBy = "votingOptionId")
     private List<VotingOption> options;
 
+    @JsonIgnore
     @ManyToMany(targetEntity = Group.class, cascade = {CascadeType.ALL})
     @JoinTable(
             name = "votings_groups",
@@ -45,7 +51,7 @@ public class Voting {
 
     }
 
-    public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, List<VotingOption> options) {
+    public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, List<VotingOption> options, List<Group> groups, String name) {
         votingId = id;
         this.user = user;
         this.startTimeStamp = startTimeStamp;
@@ -53,6 +59,8 @@ public class Voting {
         this.votingType = votingType;
         this.description = description;
         this.options = options;
+        this.groups = groups;
+        this.name = name;
     }
 
     public long getVotingId() {
@@ -109,5 +117,21 @@ public class Voting {
 
     public void setOptions(List<VotingOption> options) {
         this.options = options;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
     }
 }

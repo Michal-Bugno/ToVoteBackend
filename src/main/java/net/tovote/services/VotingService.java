@@ -11,7 +11,7 @@ public interface VotingService {
 
     List<Voting> getAllForUsername(String username) throws UserNotFoundException;
     Voting getById(long id) throws VotingNotFoundException;
-    void add(Voting voting);
+    void add(Voting voting, String Username) throws UserNotFoundException;
     List<Vote> getAllVotes(long votingId) throws VotingNotFoundException;
     void submitVote(long votingId, Vote vote) throws VotingNotFoundException;
     void update(Voting voting) throws VotingNotFoundException;

@@ -1,5 +1,7 @@
 package net.tovote.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "users")
     private List<Group> groups;
 

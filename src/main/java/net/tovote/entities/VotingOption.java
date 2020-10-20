@@ -1,6 +1,8 @@
 package net.tovote.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 
 @Entity
@@ -15,6 +17,7 @@ public class VotingOption {
     @Column(name = "option_number")
     private int optionNumber;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     private Voting voting;
 
@@ -28,7 +31,7 @@ public class VotingOption {
     public VotingOption(long id, String name, int optionNumber) {
         votingOptionId = id;
         this.name = name;
-        this.optionNumber = optionNumber
+        this.optionNumber = optionNumber;
     }
 
     public long getId() {

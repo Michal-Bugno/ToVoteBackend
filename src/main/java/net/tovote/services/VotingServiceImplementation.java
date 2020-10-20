@@ -26,18 +26,14 @@ public class VotingServiceImplementation implements VotingService{
     public VotingServiceImplementation(VotingRepository votingRepository, UserRepository userRepository, VoteRepository voteRepository){
         this.userRepository = userRepository;
         this.votingRepository = votingRepository;
+        this.voteRepository = voteRepository;
     }
 
     @Override
     public List<Voting> getAllForUsername(String username) throws UserNotFoundException{
         if(! userRepository.existsById(username))
             throw new UserNotFoundException(username);
-        Voting exampleVoting = new Voting();
-        User exampleUser = new User();
-        exampleUser.setUsername(username);
-        exampleVoting.setUser(exampleUser);
-        Example<Voting> example = Example.of(exampleVoting);
-        return votingRepository.findAll(example);
+        return votingRepository.findAllForUserName(username);
     }
 
     @Override
@@ -49,7 +45,11 @@ public class VotingServiceImplementation implements VotingService{
     }
 
     @Override
-    public void add(Voting voting) {
+    public void add(Voting voting, String username) throws UserNotFoundException{
+        Optional<User> user = userRepository.findById(username);
+        if(!user.isPresent())
+            throw new UserNotFoundException(username);
+        voting.setUser(user.get());
         votingRepository.save(voting);
     }
 
@@ -66,8 +66,12 @@ public class VotingServiceImplementation implements VotingService{
     }
 
     @Override
-    public void submitVote(long votingId, Vote vote){
-
+    public void submitVote(long votingId, Vote vote) throws VotingNotFoundException{
+        Optional<Voting> voting = votingRepository.findById(votingId);
+        if(!voting.isPresent())
+            throw new VotingNotFoundException("Cannot submit vote to a non-existing voting");
+        vote.setVoting(voting.get());
+        voteRepository.save(vote);
     }
 
     @Override

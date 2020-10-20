@@ -55,16 +55,16 @@ public class UserServiceImplementation implements UserService{
         if(updatedUser.isPresent())
             return;
 
-        throw new UserNotFoundException("User with given username does not exist!");
+        throw new UserNotFoundException(user.getUsername());
 
     }
 
     @Override
     public User delete(String username) throws UserNotFoundException {
-        Optional<User> user = userRepository.findById(username);
-        if(!user.isPresent())
+        if(!userRepository.existsById(username))
             throw new UserNotFoundException(username);
-        userRepository.deleteById(username);
-        return user.get();
+        User userToDelete = userRepository.findById(username).get();
+        userRepository.delete(userToDelete);
+        return userToDelete;
     }
 }
