@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -39,13 +40,13 @@ public class UserController {
         return userService.getByUsername(username);
     }
 
-    @GetMapping("/{groupId}")
+    @GetMapping("/group//{groupId}")
     public List<User> getUsersForGroup(@PathVariable long groupId) throws GroupNotFoundException {
         return userService.getAllForGroup(groupId);
     }
 
     @PostMapping
-    public User addUser(@RequestBody User user) throws UsernameExistsException {
+    public User addUser(@RequestBody User user) throws UsernameExistsException, EmailInUseException {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         userService.add(user);
         return user;

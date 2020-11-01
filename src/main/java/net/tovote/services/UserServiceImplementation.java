@@ -2,12 +2,14 @@ package net.tovote.services;
 
 import net.tovote.entities.Group;
 import net.tovote.entities.User;
+import net.tovote.exceptions.EmailInUseException;
 import net.tovote.exceptions.GroupNotFoundException;
 import net.tovote.exceptions.UserNotFoundException;
 import net.tovote.exceptions.UsernameExistsException;
 import net.tovote.repositories.GroupRepository;
 import net.tovote.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 
@@ -41,9 +43,14 @@ public class UserServiceImplementation implements UserService{
     }
 
     @Override
-    public void add(User user) throws UsernameExistsException {
+    public void add(User user) throws UsernameExistsException, EmailInUseException {
         if(userRepository.existsById(user.getUsername()))
             throw new UsernameExistsException(user.getUsername());
+        User exampleUser = new User();
+        exampleUser.setEmail(user.getEmail());
+        Example<User> example = Example.of(exampleUser);
+        if(userRepository.exists(example))
+            throw new EmailInUseException();
         userRepository.save(user);
     }
 
