@@ -17,6 +17,9 @@ public class Group {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "description")
+    private String description;
+
     @JsonIgnore
     @ManyToMany(targetEntity = User.class, cascade = {CascadeType.ALL})
     @JoinTable(
@@ -26,16 +29,21 @@ public class Group {
     private List<User> users;
 
     @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User owner;
+
+    @JsonIgnore
     @ManyToMany(mappedBy = "groups")
     private List<Voting> votings;
 
     public Group() {
     }
 
-    public Group(long id, String name, List<User> users) {
+    public Group(long id, String name, List<User> users, String description) {
         this.groupId = id;
         this.name = name;
         this.users = users;
+        this.description = description;
     }
 
 
@@ -43,8 +51,33 @@ public class Group {
         return groupId;
     }
 
-    public void setGroupId(long groupId) {
+    public void setGroupId(long groupId, User owner) {
         this.groupId = groupId;
+        this.owner = owner;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<Voting> getVotings() {
+        return votings;
+    }
+
+    public void setVotings(List<Voting> votings) {
+        this.votings = votings;
     }
 
     public String getName() {

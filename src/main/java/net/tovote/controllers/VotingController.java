@@ -9,6 +9,7 @@ import net.tovote.exceptions.UserNotFoundException;
 import net.tovote.exceptions.VotingNotFoundException;
 import net.tovote.security.SecurityConstants;
 import net.tovote.security.TokenDecoder;
+import net.tovote.services.GroupService;
 import net.tovote.services.UserService;
 import net.tovote.services.VotingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,12 @@ import java.util.List;
 public class VotingController {
 
     private VotingService votingService;
-    //private UserService userService
+    private GroupService groupService;
 
     @Autowired
-    public VotingController(VotingService votingService) {
+    public VotingController(VotingService votingService, GroupService groupService) {
         this.votingService = votingService;
+        this.groupService = groupService;
     }
 
     @GetMapping
@@ -52,4 +54,6 @@ public class VotingController {
         List<Vote> votes = votingService.getAllVotes(votingId);
         return votes;
     }
+
+    private boolean authorizeVote(long votingId, )
 }

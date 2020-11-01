@@ -9,6 +9,9 @@ import net.tovote.exceptions.UserNotFoundException;
 import java.util.List;
 
 public interface GroupService {
+    void add(Group group, String ownerUsername) throws UserNotFoundException;
+    void update(Group group) throws GroupNotFoundException;
     List<Group> getAllForUsername(String username) throws UserNotFoundException;
     boolean checkMembership(String username, long groupId) throws UserNotFoundException, GroupNotFoundException;
+    boolean checkOwnership(String username, long groupId) throws UserNotFoundException, GroupNotFoundException;
 }

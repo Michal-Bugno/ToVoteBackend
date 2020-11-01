@@ -1,10 +1,13 @@
 package net.tovote.services;
 
+import net.tovote.entities.Group;
 import net.tovote.entities.User;
 import net.tovote.entities.Vote;
 import net.tovote.entities.Voting;
+import net.tovote.exceptions.GroupNotFoundException;
 import net.tovote.exceptions.UserNotFoundException;
 import net.tovote.exceptions.VotingNotFoundException;
+import net.tovote.repositories.GroupRepository;
 import net.tovote.repositories.UserRepository;
 import net.tovote.repositories.VoteRepository;
 import net.tovote.repositories.VotingRepository;
@@ -21,12 +24,14 @@ public class VotingServiceImplementation implements VotingService{
     private VotingRepository votingRepository;
     private UserRepository userRepository;
     private VoteRepository voteRepository;
+    private GroupRepository groupRepository;
 
     @Autowired
-    public VotingServiceImplementation(VotingRepository votingRepository, UserRepository userRepository, VoteRepository voteRepository){
+    public VotingServiceImplementation(VotingRepository votingRepository, UserRepository userRepository, VoteRepository voteRepository, GroupRepository groupRepository){
         this.userRepository = userRepository;
         this.votingRepository = votingRepository;
         this.voteRepository = voteRepository;
+        this.groupRepository = groupRepository;
     }
 
     @Override
@@ -51,6 +56,38 @@ public class VotingServiceImplementation implements VotingService{
             throw new UserNotFoundException(username);
         voting.setUser(user.get());
         votingRepository.save(voting);
+    }
+
+    @Override
+    public void addGroup(long votingId, long groupId) throws VotingNotFoundException, GroupNotFoundException {
+        Optional<Voting> voting = votingRepository.findById(votingId);
+        if(voting.isEmpty())
+            throw new VotingNotFoundException("No voting with given ID!");
+        Optional<Group> group = groupRepository.findById(groupId);
+        if(group.isEmpty())
+            throw new GroupNotFoundException("No group with given ID!");
+        voting.get().getGroups().add(group.get());
+    }
+
+    @Override
+    public void deleteGroup(long votingId, long groupId) throws VotingNotFoundException, GroupNotFoundException {
+        Optional<Voting> voting = votingRepository.findById(votingId);
+        if(voting.isEmpty())
+            throw new VotingNotFoundException("No voting with given ID!");
+        Optional<Group> group = groupRepository.findById(groupId);
+        if(group.isEmpty())
+            throw new GroupNotFoundException("No group with given ID!");
+        voting.get().getGroups().remove(group.get());
+    }
+
+    @Override
+    public boolean checkOwnership(String username, long votingId) throws UserNotFoundException, VotingNotFoundException {
+        Optional<Voting> voting = votingRepository.findById(votingId);
+        if(voting.isEmpty())
+            throw new VotingNotFoundException("No voting with given ID!");
+        if(voting.get().getUser().getUsername().equals(username))
+            return true;
+        return false;
     }
 
     @Override
