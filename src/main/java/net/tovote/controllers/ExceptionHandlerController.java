@@ -1,9 +1,6 @@
 package net.tovote.controllers;
 
-import net.tovote.exceptions.BadAuthorizationException;
-import net.tovote.exceptions.UserNotFoundException;
-import net.tovote.exceptions.UsernameExistsException;
-import net.tovote.exceptions.VotingNotFoundException;
+import net.tovote.exceptions.*;
 import net.tovote.responses.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +16,8 @@ public class ExceptionHandlerController {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(UsernameExistsException.class)
-    public ResponseEntity<ErrorResponse> handleUsernameExistsException(UsernameExistsException u){
+    @ExceptionHandler({UsernameExistsException.class, EmailInUseException.class})
+    public ResponseEntity<ErrorResponse> handleUsernameOrEmailConflict(UserException u){
         ErrorResponse response = new ErrorResponse(HttpStatus.CONFLICT.value(), u.getMessage());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
