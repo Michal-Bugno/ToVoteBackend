@@ -33,4 +33,11 @@ public class ExceptionHandlerController {
         ErrorResponse response = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), b.getMessage());
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(GroupNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleGroupNotFoundException(GroupNotFoundException g){
+        ErrorResponse response = new ErrorResponse(HttpStatus.NOT_FOUND.value(), g.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
 }

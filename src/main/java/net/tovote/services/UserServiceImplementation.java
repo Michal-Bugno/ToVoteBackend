@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImplementation implements UserService{
@@ -30,15 +32,11 @@ public class UserServiceImplementation implements UserService{
     }
 
     @Override
-    public List<User> getAll() {
-        return userRepository.findAll();
-    }
-
-    @Override
     public User getByUsername(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(username);
         if(!user.isPresent())
             throw new UserNotFoundException(username);
+        user.get().setPassword("---");
         return user.get();
     }
 
@@ -55,20 +53,16 @@ public class UserServiceImplementation implements UserService{
     }
 
     @Override
-    public void update(User user) throws UserNotFoundException {
-        Optional<User> updatedUser = userRepository.findById(user.getUsername()).map(u -> {
-            u.setEmail(user.getEmail());
-            u.setFirstName(user.getFirstName());
-            u.setLastName(user.getLastName());
-            u.setPassword(user.getPassword());
-            return userRepository.save(u);
-        });
+    public void update(User user) throws UserNotFoundException{
 
-        if(updatedUser.isPresent())
-            return;
-
-        throw new UserNotFoundException(user.getUsername());
-
+        Optional<User> userToUpdate = userRepository.findById(user.getUsername());
+        if(!userToUpdate.isPresent())
+            throw new UserNotFoundException(user.getUsername());
+        User updatedUser = userToUpdate.get();
+        updatedUser.setFirstName(user.getFirstName());
+        updatedUser.setLastName(user.getLastName());
+        updatedUser.setUserInfo(user.getUserInfo());
+        userRepository.save(updatedUser);
     }
 
     @Override
@@ -76,15 +70,17 @@ public class UserServiceImplementation implements UserService{
         if(!userRepository.existsById(username))
             throw new UserNotFoundException(username);
         User userToDelete = userRepository.findById(username).get();
+        for(Group g : userToDelete.getGroups())
+            g.getUsers().remove(userToDelete);
         userRepository.delete(userToDelete);
         return userToDelete;
     }
 
     @Override
-    public List<User> getAllForGroup(long groupId) throws GroupNotFoundException {
+    public Set<User> getAllForGroup(long groupId) throws GroupNotFoundException {
         if(!groupRepository.existsById(groupId))
             throw new GroupNotFoundException("Given group does not exist!");
-        List<User> users = groupRepository.findById(groupId).get().getUsers();
-        return users;
+        Set<User> users = groupRepository.findById(groupId).get().getUsers();
+        return users.stream().map(u -> {u.setPassword("---"); return u;}).collect(Collectors.toSet());
     }
 }

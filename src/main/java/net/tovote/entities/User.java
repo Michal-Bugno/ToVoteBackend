@@ -1,9 +1,11 @@
 package net.tovote.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 
 @Entity
@@ -18,6 +20,7 @@ public class User {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "user_password", nullable = false)
     private String password;
 
@@ -27,21 +30,25 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "info")
+    private String userInfo;
+
     @JsonIgnore
     @ManyToMany(mappedBy = "users")
-    private List<Group> groups;
+    private Set<Group> groups;
 
     public User(){
 
     }
 
-    public User(String username, String email, String password, String firstName, String lastName, List<Group> groups) {
+    public User(String username, String email, String password, String firstName, String lastName, Set<Group> groups, String userInfo) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.groups = groups;
+        this.userInfo = userInfo;
     }
 
 
@@ -85,12 +92,34 @@ public class User {
         this.lastName = lastName;
     }
 
-    public List<Group> getGroups() {
+    public Set<Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(List<Group> groups) {
+    public void setGroups(Set<Group> groups) {
         this.groups = groups;
+    }
+
+    public String getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(String userInfo) {
+        this.userInfo = userInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return username.equals(user.username);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
     }
 
     @Override

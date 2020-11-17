@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class VotingServiceImplementation implements VotingService{
@@ -66,7 +67,7 @@ public class VotingServiceImplementation implements VotingService{
         Optional<Group> group = groupRepository.findById(groupId);
         if(group.isEmpty())
             throw new GroupNotFoundException("No group with given ID!");
-        voting.get().getGroups().add(group.get());
+        voting.get().addGroup(group.get());
     }
 
     @Override
@@ -77,7 +78,7 @@ public class VotingServiceImplementation implements VotingService{
         Optional<Group> group = groupRepository.findById(groupId);
         if(group.isEmpty())
             throw new GroupNotFoundException("No group with given ID!");
-        voting.get().getGroups().remove(group.get());
+        voting.get().removeGroup(group.get());
     }
 
     @Override
@@ -91,14 +92,10 @@ public class VotingServiceImplementation implements VotingService{
     }
 
     @Override
-    public List<Vote> getAllVotes(long votingId) throws VotingNotFoundException{
+    public Set<Vote> getAllVotes(long votingId) throws VotingNotFoundException{
         if(!votingRepository.existsById(votingId))
             throw new VotingNotFoundException("Voting with given ID not found!");
-        Voting voting = votingRepository.findById(votingId).get();
-        Vote exampleVote = new Vote();
-        exampleVote.setVoting(voting);
-        Example<Vote> example = Example.of(exampleVote);
-        List<Vote> votes = voteRepository.findAll(example);
+        Set<Vote> votes = voteRepository.findAllForVoting(votingId);
         return votes;
     }
 

@@ -5,6 +5,7 @@ import net.tovote.enums.VotingType;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "votings")
@@ -45,13 +46,13 @@ public class Voting {
             name = "votings_groups",
             joinColumns = @JoinColumn(name = "voting_id"),
             inverseJoinColumns = @JoinColumn(name = "group_id"))
-    private List<Group> groups;
+    private Set<Group> groups;
 
     public Voting(){
 
     }
 
-    public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, List<VotingOption> options, List<Group> groups, String name) {
+    public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, List<VotingOption> options, Set<Group> groups, String name) {
         votingId = id;
         this.user = user;
         this.startTimeStamp = startTimeStamp;
@@ -62,6 +63,18 @@ public class Voting {
         this.groups = groups;
         this.name = name;
     }
+
+    public void addGroup(Group group){
+        groups.add(group);
+        group.getVotings().add(this);
+    }
+
+    public void removeGroup(Group group){
+        groups.remove(group);
+        group.getVotings().remove(this);
+    }
+
+
 
     public long getVotingId() {
         return votingId;
@@ -127,11 +140,11 @@ public class Voting {
         this.name = name;
     }
 
-    public List<Group> getGroups() {
+    public Set<Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(List<Group> groups) {
+    public void setGroups(Set<Group> groups) {
         this.groups = groups;
     }
 }

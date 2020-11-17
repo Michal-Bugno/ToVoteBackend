@@ -9,8 +9,8 @@ import net.tovote.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class GroupServiceImplementation implements GroupService{
@@ -21,6 +21,7 @@ public class GroupServiceImplementation implements GroupService{
     @Autowired
     public GroupServiceImplementation(GroupRepository groupRepository, UserRepository userRepository) {
         this.groupRepository = groupRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -44,18 +45,48 @@ public class GroupServiceImplementation implements GroupService{
     }
 
     @Override
-    public List<Group> getAllForUsername(String username) throws UserNotFoundException {
+    public Group delete(long groupId) throws GroupNotFoundException {
+        Optional<Group> groupToDelete = groupRepository.findById(groupId);
+        if(groupToDelete.isEmpty())
+            throw new GroupNotFoundException("There is no group with given ID!");
+        for(User u : groupToDelete.get().getUsers())
+            groupToDelete.get().removeUser(u);
+        groupRepository.delete(groupToDelete.get());
+        return groupToDelete.get();
+    }
+
+    @Override
+    public Group getById(long groupId) throws GroupNotFoundException{
+        Optional<Group> group = groupRepository.findById(groupId);
+        if(group.isEmpty())
+            throw new GroupNotFoundException("No group with given ID!");
+        return group.get();
+    }
+
+    @Override
+    public Set<Group> getAllExceptOwnedForUsername(String username) throws UserNotFoundException {
         if(!userRepository.existsById(username))
             throw new UserNotFoundException(username);
-        List<Group> groups = userRepository.findById(username).get().getGroups();
+        Set<Group> groups = userRepository.findById(username).get().getGroups();
         return groups;
     }
+
+    @Override
+    public Set<Group> getOwnedForUsername(String username) throws UserNotFoundException {
+        if(!userRepository.existsById(username))
+            throw new UserNotFoundException(username);
+        Set<Group> ownedGroups = groupRepository.findAllOwnedBy(username);
+        return ownedGroups;
+    }
+
 
     @Override
     public boolean checkMembership(String username, long groupId) throws UserNotFoundException, GroupNotFoundException {
         if(!groupRepository.existsById(groupId))
             throw new GroupNotFoundException("There is no group with given ID!");
-        List<User> users = groupRepository.findById(groupId).get().getUsers();
+        if(!userRepository.existsById(username))
+            throw new UserNotFoundException(username);
+        Set<User> users = groupRepository.findById(groupId).get().getUsers();
         for(User u : users){
             if(u.getUsername().equals(username))
                 return true;
@@ -65,6 +96,42 @@ public class GroupServiceImplementation implements GroupService{
 
     @Override
     public boolean checkOwnership(String username, long groupId) throws UserNotFoundException, GroupNotFoundException {
+        if(!groupRepository.existsById(groupId))
+            throw new GroupNotFoundException("There is no group with given ID!");
+        if(!userRepository.existsById(username))
+            throw new UserNotFoundException(username);
+        Optional<Group> group = groupRepository.findById(groupId);
+        if(group.get().getOwner().getUsername().equals(username))
+            return true;
         return false;
+    }
+
+    @Override
+    public User addUser(String username, long groupId) throws UserNotFoundException, GroupNotFoundException {
+        Optional<Group> group = groupRepository.findById(groupId);
+        if(group.isEmpty())
+            throw new GroupNotFoundException("No group with given ID!");
+        Optional<User> user = userRepository.findById(username);
+        if(user.isEmpty())
+            throw new UserNotFoundException(username);
+        group.get().addUser(user.get());
+        groupRepository.save(group.get());
+        User returnedUser = user.get();
+        returnedUser.setPassword("---");
+        return returnedUser;
+    }
+
+    @Override
+    public User deleteUser(String username, long groupId) throws GroupNotFoundException, UserNotFoundException {
+        Optional<Group> group = groupRepository.findById(groupId);
+        if(group.isEmpty())
+            throw new GroupNotFoundException("No group with given ID!");
+        Optional<User> user = userRepository.findById(username);
+        if(user.isEmpty())
+            throw new UserNotFoundException(username);
+        group.get().removeUser(user.get());
+        User returnedUser = user.get();
+        returnedUser.setPassword("---");
+        return returnedUser;
     }
 }

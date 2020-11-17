@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "groups")
@@ -26,24 +27,35 @@ public class Group {
             name = "groups_users",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "username"))
-    private List<User> users;
+    private Set<User> users;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User owner;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private User owner; // TODO Consider changing it to OneToMany/ManyToMany
 
     @JsonIgnore
     @ManyToMany(mappedBy = "groups")
-    private List<Voting> votings;
+    private Set<Voting> votings;
 
     public Group() {
     }
 
-    public Group(long id, String name, List<User> users, String description) {
+    public Group(long id, String name, Set<User> users, String description, Set<Voting> votings) {
         this.groupId = id;
         this.name = name;
         this.users = users;
         this.description = description;
+        this.votings = votings;
+    }
+
+
+    public void addUser(User user){
+        users.add(user);
+        user.getGroups().add(this);
+    }
+
+    public void removeUser(User user){
+        users.remove(user);
+        user.getGroups().remove(this);
     }
 
 
@@ -72,11 +84,11 @@ public class Group {
         this.description = description;
     }
 
-    public List<Voting> getVotings() {
+    public Set<Voting> getVotings() {
         return votings;
     }
 
-    public void setVotings(List<Voting> votings) {
+    public void setVotings(Set<Voting> votings) {
         this.votings = votings;
     }
 
@@ -88,11 +100,11 @@ public class Group {
         this.name = name;
     }
 
-    public List<User> getUsers() {
+    public Set<User> getUsers() {
         return users;
     }
 
-    public void setUsers(List<User> users) {
+    public void setUsers(Set<User> users) {
         this.users = users;
     }
 }

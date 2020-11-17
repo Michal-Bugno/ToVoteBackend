@@ -15,8 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
-@CrossOrigin
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -30,19 +31,20 @@ public class UserController {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    @GetMapping
-    public List<User> getUsers(){
-        return userService.getAll();
-    }
-
     @GetMapping("/{username}")
     public User getUser(@PathVariable String username) throws UserNotFoundException {
         return userService.getByUsername(username);
     }
 
     @GetMapping("/group//{groupId}")
-    public List<User> getUsersForGroup(@PathVariable long groupId) throws GroupNotFoundException {
-        return userService.getAllForGroup(groupId);
+    public Set<User> getUsersForGroup(@PathVariable String groupId) throws GroupNotFoundException {
+        try {
+            long groupIdLong = Long.parseLong(groupId);
+            return userService.getAllForGroup(groupIdLong);
+        }
+        catch(NumberFormatException n){
+            throw new GroupNotFoundException("No valid id provided!");
+        }
     }
 
     @PostMapping
@@ -53,7 +55,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user, @RequestHeader String token) throws UserNotFoundException, BadAuthorizationException{
+    public User updateUser(@RequestBody User user, @RequestHeader(name = "Authorization") String token) throws UserNotFoundException, BadAuthorizationException{
         String subject = TokenDecoder.getUsername(token);
         if(!subject.equals(user.getUsername()))
             throw new BadAuthorizationException("Your identity and provided username do not match!");

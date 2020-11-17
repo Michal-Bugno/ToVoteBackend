@@ -41,7 +41,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
         @Bean
         CorsConfigurationSource corsConfigurationSource() {
             final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-            source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+            var configuration = new CorsConfiguration().applyPermitDefaultValues();
+            configuration.addAllowedMethod(HttpMethod.DELETE);
+            configuration.addAllowedMethod(HttpMethod.PUT);
+            source.registerCorsConfiguration("/**", configuration);
             return source;
         }
     }

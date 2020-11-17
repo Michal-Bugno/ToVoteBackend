@@ -17,8 +17,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
-@CrossOrigin
+
 @RestController
 @RequestMapping("/votings")
 public class VotingController {
@@ -51,10 +52,10 @@ public class VotingController {
     }
 
     @GetMapping("/{votingId}/votes")
-    public List<Vote> getVotes(@PathVariable long votingId) throws VotingNotFoundException{
-        List<Vote> votes = votingService.getAllVotes(votingId);
+    public Set<Vote> getVotes(@PathVariable long votingId) throws VotingNotFoundException{
+        Set<Vote> votes = votingService.getAllVotes(votingId);
         return votes;
     }
 
-    private boolean authorizeVote(long votingId, )
+    //private boolean authorizeVote(long votingId, )
 }
