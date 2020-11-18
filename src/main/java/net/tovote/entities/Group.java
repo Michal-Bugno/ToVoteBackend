@@ -22,7 +22,7 @@ public class Group {
     private String description;
 
     @JsonIgnore
-    @ManyToMany(targetEntity = User.class, cascade = {CascadeType.ALL})
+    @ManyToMany(targetEntity = User.class, cascade = {CascadeType.PERSIST})
     @JoinTable(
             name = "groups_users",
             joinColumns = @JoinColumn(name = "group_id"),

@@ -1,6 +1,7 @@
 package net.tovote.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import net.tovote.enums.VotingType;
 
 import javax.persistence.*;
@@ -26,6 +27,9 @@ public class Voting {
     @Column(name = "end_time_stamp")
     private long endTimeStamp;
 
+    @Column(name = "explicit")
+    private boolean explicit;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "voting_type", length = 25, nullable = false)
     private VotingType votingType;
@@ -36,12 +40,17 @@ public class Voting {
     @Column(name = "description", nullable = true)
     private String description;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "votingOptionId")
-    private List<VotingOption> options;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "voting_id")
+    private Set<VotingOption> options;
 
     @JsonIgnore
-    @ManyToMany(targetEntity = Group.class, cascade = {CascadeType.ALL})
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "voting_id")
+    private Set<Vote> votes;
+
+    @JsonIgnore
+    @ManyToMany(targetEntity = Group.class, cascade = {CascadeType.PERSIST})
     @JoinTable(
             name = "votings_groups",
             joinColumns = @JoinColumn(name = "voting_id"),
@@ -52,7 +61,7 @@ public class Voting {
 
     }
 
-    public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, List<VotingOption> options, Set<Group> groups, String name) {
+    public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, Set<VotingOption> options, Set<Vote> votes, Set<Group> groups, String name) {
         votingId = id;
         this.user = user;
         this.startTimeStamp = startTimeStamp;
@@ -62,6 +71,15 @@ public class Voting {
         this.options = options;
         this.groups = groups;
         this.name = name;
+        this.votes = votes;
+    }
+
+    public Set<Vote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(Set<Vote> votes) {
+        this.votes = votes;
     }
 
     public void addGroup(Group group){
@@ -74,7 +92,13 @@ public class Voting {
         group.getVotings().remove(this);
     }
 
+    public boolean isExplicit() {
+        return explicit;
+    }
 
+    public void setExplicit(boolean explicit) {
+        this.explicit = explicit;
+    }
 
     public long getVotingId() {
         return votingId;
@@ -124,11 +148,11 @@ public class Voting {
         this.description = description;
     }
 
-    public List<VotingOption> getOptions() {
+    public Set<VotingOption> getOptions() {
         return options;
     }
 
-    public void setOptions(List<VotingOption> options) {
+    public void setOptions(Set<VotingOption> options) {
         this.options = options;
     }
 

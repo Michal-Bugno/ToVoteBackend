@@ -13,7 +13,4 @@ import java.util.Set;
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Long> {
 
-    @Query(value = "SELECT * FROM votes WHERE voting_id = :votingId", nativeQuery = true)
-    Set<Vote> findAllForVoting(@Param("votingId") long votingId);
-
 }

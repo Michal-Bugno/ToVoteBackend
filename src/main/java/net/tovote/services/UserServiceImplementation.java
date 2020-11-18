@@ -13,7 +13,6 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,7 +35,6 @@ public class UserServiceImplementation implements UserService{
         Optional<User> user = userRepository.findById(username);
         if(!user.isPresent())
             throw new UserNotFoundException(username);
-        user.get().setPassword("---");
         return user.get();
     }
 

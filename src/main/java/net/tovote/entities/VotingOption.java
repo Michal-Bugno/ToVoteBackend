@@ -11,15 +11,11 @@ public class VotingOption {
 
     @Id
     @GeneratedValue
-    @Column(name = "voting_option_id", nullable = false)
-    private long votingOptionId;
+    @Column(name = "id", nullable = false)
+    private long id;
 
     @Column(name = "option_number")
     private int optionNumber;
-
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Voting voting;
 
     @Column(name = "name")
     private String name;
@@ -28,18 +24,9 @@ public class VotingOption {
 
     }
 
-    public VotingOption(long id, String name, int optionNumber) {
-        votingOptionId = id;
+    public VotingOption(long votingOptionId, String name, int optionNumber, Voting voting) {
         this.name = name;
         this.optionNumber = optionNumber;
-    }
-
-    public long getId() {
-        return votingOptionId;
-    }
-
-    public void setId(long id) {
-        votingOptionId = id;
     }
 
     public String getName() {
@@ -48,5 +35,13 @@ public class VotingOption {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getOptionNumber() {
+        return optionNumber;
+    }
+
+    public void setOptionNumber(int optionNumber) {
+        this.optionNumber = optionNumber;
     }
 }

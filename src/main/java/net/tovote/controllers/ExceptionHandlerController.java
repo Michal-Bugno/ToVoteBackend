@@ -1,5 +1,6 @@
 package net.tovote.controllers;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import net.tovote.exceptions.*;
 import net.tovote.responses.ErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -40,4 +41,9 @@ public class ExceptionHandlerController {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(AlreadyVotedException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyVotedException(AlreadyVotedException a){
+        ErrorResponse response = new ErrorResponse(HttpStatus.CONFLICT.value(), a.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
 }

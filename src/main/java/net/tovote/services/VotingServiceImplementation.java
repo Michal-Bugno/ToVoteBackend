@@ -4,13 +4,11 @@ import net.tovote.entities.Group;
 import net.tovote.entities.User;
 import net.tovote.entities.Vote;
 import net.tovote.entities.Voting;
+import net.tovote.exceptions.AlreadyVotedException;
 import net.tovote.exceptions.GroupNotFoundException;
 import net.tovote.exceptions.UserNotFoundException;
 import net.tovote.exceptions.VotingNotFoundException;
-import net.tovote.repositories.GroupRepository;
-import net.tovote.repositories.UserRepository;
-import net.tovote.repositories.VoteRepository;
-import net.tovote.repositories.VotingRepository;
+import net.tovote.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -18,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class VotingServiceImplementation implements VotingService{
@@ -26,13 +25,15 @@ public class VotingServiceImplementation implements VotingService{
     private UserRepository userRepository;
     private VoteRepository voteRepository;
     private GroupRepository groupRepository;
+    private VotingOptionRepository votingOptionRepository;
 
     @Autowired
-    public VotingServiceImplementation(VotingRepository votingRepository, UserRepository userRepository, VoteRepository voteRepository, GroupRepository groupRepository){
+    public VotingServiceImplementation(VotingRepository votingRepository, UserRepository userRepository, VoteRepository voteRepository, GroupRepository groupRepository, VotingOptionRepository votingOptionRepository){
         this.userRepository = userRepository;
         this.votingRepository = votingRepository;
         this.voteRepository = voteRepository;
         this.groupRepository = groupRepository;
+        this.votingOptionRepository = votingOptionRepository;
     }
 
     @Override
@@ -60,7 +61,7 @@ public class VotingServiceImplementation implements VotingService{
     }
 
     @Override
-    public void addGroup(long votingId, long groupId) throws VotingNotFoundException, GroupNotFoundException {
+    public Group addGroup(long votingId, long groupId) throws VotingNotFoundException, GroupNotFoundException {
         Optional<Voting> voting = votingRepository.findById(votingId);
         if(voting.isEmpty())
             throw new VotingNotFoundException("No voting with given ID!");
@@ -68,10 +69,12 @@ public class VotingServiceImplementation implements VotingService{
         if(group.isEmpty())
             throw new GroupNotFoundException("No group with given ID!");
         voting.get().addGroup(group.get());
+        votingRepository.save(voting.get());
+        return group.get();
     }
 
     @Override
-    public void deleteGroup(long votingId, long groupId) throws VotingNotFoundException, GroupNotFoundException {
+    public Group deleteGroup(long votingId, long groupId) throws VotingNotFoundException, GroupNotFoundException {
         Optional<Voting> voting = votingRepository.findById(votingId);
         if(voting.isEmpty())
             throw new VotingNotFoundException("No voting with given ID!");
@@ -79,6 +82,8 @@ public class VotingServiceImplementation implements VotingService{
         if(group.isEmpty())
             throw new GroupNotFoundException("No group with given ID!");
         voting.get().removeGroup(group.get());
+        votingRepository.deleteById(votingId);
+        return group.get();
     }
 
     @Override
@@ -93,19 +98,25 @@ public class VotingServiceImplementation implements VotingService{
 
     @Override
     public Set<Vote> getAllVotes(long votingId) throws VotingNotFoundException{
-        if(!votingRepository.existsById(votingId))
+        var voting = votingRepository.findById(votingId);
+        if(voting.isEmpty())
             throw new VotingNotFoundException("Voting with given ID not found!");
-        Set<Vote> votes = voteRepository.findAllForVoting(votingId);
+        Set<Vote> votes = voting.get().getVotes();
+        if(!voting.get().isExplicit())
+            return votes.stream().map(v -> {v.setUser(null); return v;}).collect(Collectors.toSet());
         return votes;
     }
 
     @Override
-    public void submitVote(long votingId, Vote vote) throws VotingNotFoundException{
+    public void submitVote(long votingId, Vote vote) throws VotingNotFoundException, AlreadyVotedException {
         Optional<Voting> voting = votingRepository.findById(votingId);
         if(!voting.isPresent())
-            throw new VotingNotFoundException("Cannot submit vote to a non-existing voting");
-        vote.setVoting(voting.get());
-        voteRepository.save(vote);
+            throw new VotingNotFoundException("Cannot submit vote to a non-existing voting!");
+        for(Vote v : voting.get().getVotes())
+            if(v.getUser().getUsername().equals(vote.getUser().getUsername()))
+                throw new AlreadyVotedException(v.getUser().getUsername());
+        voting.get().getVotes().add(vote);
+        votingRepository.save(voting.get());
     }
 
     @Override
@@ -115,6 +126,7 @@ public class VotingServiceImplementation implements VotingService{
             v.setEndTimeStamp(voting.getEndTimeStamp());
             v.setDescription(voting.getDescription());
             v.setVotingType(voting.getVotingType());
+            v.setName(voting.getName());
             return votingRepository.save(v);
         });
 
@@ -125,7 +137,11 @@ public class VotingServiceImplementation implements VotingService{
     }
 
     @Override
-    public Voting deleteById(long id) throws VotingNotFoundException {
-        return null;
+    public Voting deleteById(long id) throws VotingNotFoundException{
+        var voting = votingRepository.findById(id);
+        if(voting.isEmpty())
+            throw new VotingNotFoundException("No voting with given ID!");
+        votingRepository.deleteById(id);
+        return voting.get();
     }
 }

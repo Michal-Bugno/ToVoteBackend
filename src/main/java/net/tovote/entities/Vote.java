@@ -13,11 +13,11 @@ public class Vote {
     @Column(name = "id", nullable = false)
     private long id;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Voting voting;
+   // @JsonIgnore
+    //@ManyToOne(fetch = FetchType.LAZY)
+    //private Voting voting;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
     @Column(name = "representation", nullable = false)
@@ -28,8 +28,7 @@ public class Vote {
 
     public Vote(long id, Voting voting, String representation, User user) {
         this.id = id;
-        this.voting = voting;
-        //this.user = user;
+        //this.voting = voting;
         voteRepresentation = representation;
     }
 
@@ -41,13 +40,13 @@ public class Vote {
         this.id = id;
     }
 
-    public Voting getVoting() {
-        return voting;
-    }
+    //public Voting getVoting() {
+    //    return voting;
+  //  }
 
-    public void setVoting(Voting voting) {
-        this.voting = voting;
-    }
+  //  public void setVoting(Voting voting) {
+   //     this.voting = voting;
+  //  }
 
     public String getVoteRepresentation() {
         return voteRepresentation;
