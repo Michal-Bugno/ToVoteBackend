@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -23,17 +24,13 @@ public class VotingServiceImplementation implements VotingService{
 
     private VotingRepository votingRepository;
     private UserRepository userRepository;
-    private VoteRepository voteRepository;
     private GroupRepository groupRepository;
-    private VotingOptionRepository votingOptionRepository;
 
     @Autowired
-    public VotingServiceImplementation(VotingRepository votingRepository, UserRepository userRepository, VoteRepository voteRepository, GroupRepository groupRepository, VotingOptionRepository votingOptionRepository){
+    public VotingServiceImplementation(VotingRepository votingRepository, UserRepository userRepository, GroupRepository groupRepository){
         this.userRepository = userRepository;
         this.votingRepository = votingRepository;
-        this.voteRepository = voteRepository;
         this.groupRepository = groupRepository;
-        this.votingOptionRepository = votingOptionRepository;
     }
 
     @Override
@@ -143,5 +140,17 @@ public class VotingServiceImplementation implements VotingService{
             throw new VotingNotFoundException("No voting with given ID!");
         votingRepository.deleteById(id);
         return voting.get();
+    }
+
+    @Override
+    public Set<Voting> getAllAuthorizedForUsername(String username) throws UserNotFoundException {
+        var user = userRepository.findById(username);
+        if(user.isEmpty())
+            throw new UserNotFoundException(username);
+        var groups = user.get().getGroups();
+        Set<Voting> votings = new HashSet<>();
+        for(Group g : groups)
+            votings.addAll(g.getVotings());
+        return votings;
     }
 }

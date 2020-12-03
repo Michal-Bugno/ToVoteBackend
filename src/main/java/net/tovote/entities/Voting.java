@@ -6,6 +6,7 @@ import net.tovote.enums.VotingType;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -17,8 +18,7 @@ public class Voting {
     @Column(name = "voting_id", nullable = false)
     private long votingId;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
     @Column(name = "start_time_stamp")
@@ -29,6 +29,9 @@ public class Voting {
 
     @Column(name = "explicit")
     private boolean explicit;
+
+    @Column(name = "winning_options_number")
+    private int winningOptionsNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "voting_type", length = 25, nullable = false)
@@ -61,7 +64,7 @@ public class Voting {
 
     }
 
-    public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, Set<VotingOption> options, Set<Vote> votes, Set<Group> groups, String name) {
+    public Voting(long id, User user, long startTimeStamp, long endTimeStamp, VotingType votingType, String description, Set<VotingOption> options, Set<Vote> votes, Set<Group> groups, String name, int winningOptionsNumber) {
         votingId = id;
         this.user = user;
         this.startTimeStamp = startTimeStamp;
@@ -72,6 +75,7 @@ public class Voting {
         this.groups = groups;
         this.name = name;
         this.votes = votes;
+        this.winningOptionsNumber = winningOptionsNumber;
     }
 
     public Set<Vote> getVotes() {
@@ -90,6 +94,27 @@ public class Voting {
     public void removeGroup(Group group){
         groups.remove(group);
         group.getVotings().remove(this);
+    }
+
+    public int getWinningOptionsNumber() {
+        return winningOptionsNumber;
+    }
+
+    public void setWinningOptionsNumber(int winningOptionsNumber) {
+        this.winningOptionsNumber = winningOptionsNumber;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Voting voting = (Voting) o;
+        return votingId == voting.votingId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(votingId);
     }
 
     public boolean isExplicit() {

@@ -2,10 +2,13 @@ package net.tovote.services;
 
 import net.tovote.entities.Group;
 import net.tovote.entities.User;
+import net.tovote.entities.Voting;
 import net.tovote.exceptions.GroupNotFoundException;
 import net.tovote.exceptions.UserNotFoundException;
+import net.tovote.exceptions.VotingNotFoundException;
 import net.tovote.repositories.GroupRepository;
 import net.tovote.repositories.UserRepository;
+import net.tovote.repositories.VotingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +20,13 @@ public class GroupServiceImplementation implements GroupService{
 
     private GroupRepository groupRepository;
     private UserRepository userRepository;
+    private VotingRepository votingRepository;
 
     @Autowired
-    public GroupServiceImplementation(GroupRepository groupRepository, UserRepository userRepository) {
+    public GroupServiceImplementation(GroupRepository groupRepository, UserRepository userRepository, VotingRepository votingRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
+        this.votingRepository = votingRepository;
     }
 
     @Override
@@ -133,5 +138,13 @@ public class GroupServiceImplementation implements GroupService{
         User returnedUser = user.get();
         returnedUser.setPassword("---");
         return returnedUser;
+    }
+
+    @Override
+    public Set<Group> getAllForVoting(long votingId) throws VotingNotFoundException {
+        var voting = votingRepository.findById(votingId);
+        if(voting.isEmpty())
+            throw new VotingNotFoundException("No voting with given id!");
+        return voting.get().getGroups();
     }
 }

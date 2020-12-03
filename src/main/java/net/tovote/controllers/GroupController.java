@@ -5,6 +5,7 @@ import net.tovote.entities.User;
 import net.tovote.exceptions.*;
 import net.tovote.security.TokenDecoder;
 import net.tovote.services.GroupService;
+import net.tovote.services.VotingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +16,12 @@ import java.util.Set;
 public class GroupController {
 
     private final GroupService groupService;
+    private final VotingService votingService;
 
     @Autowired
-    public GroupController(GroupService groupService){
+    public GroupController(GroupService groupService, VotingService votingService){
         this.groupService = groupService;
+        this.votingService = votingService;
     }
 
     @PostMapping
@@ -42,6 +45,21 @@ public class GroupController {
         return groups;
     }
 
+    @GetMapping("/voting/{votingId}")
+    public Set<Group> getGroupsForVoting(@RequestHeader(name = "Authorization") String token, @PathVariable String votingId) throws VotingNotFoundException, BadAuthorizationException, UserNotFoundException{
+        String username = TokenDecoder.getUsername(token);
+        long votingIdLong;
+        try{
+            votingIdLong = Long.parseLong(votingId);
+        }
+        catch (NumberFormatException n){
+            throw new VotingNotFoundException("No valid id provided!");
+        }
+        return groupService.getAllForVoting(votingIdLong);
+    }
+
+
+
     @PutMapping
     public Group updateGroup(@RequestHeader(name = "Authorization") String token, @RequestBody Group group) throws UserNotFoundException, GroupNotFoundException, BadAuthorizationException {
         String username = TokenDecoder.getUsername(token);
@@ -52,11 +70,18 @@ public class GroupController {
     }
 
     @DeleteMapping("/{groupId}")
-    public Group deleteGroup(@RequestHeader(name = "Authorization") String token, @PathVariable long groupId)throws UserNotFoundException, GroupNotFoundException, BadAuthorizationException{
+    public Group deleteGroup(@RequestHeader(name = "Authorization") String token, @PathVariable String groupId) throws UserNotFoundException, GroupNotFoundException, BadAuthorizationException{
+        long groupIdLong;
+        try{
+            groupIdLong = Long.parseLong(groupId);
+        }
+        catch(NumberFormatException n){
+            throw new GroupNotFoundException("No valid ID provided!");
+        }
         String username = TokenDecoder.getUsername(token);
-        if(!groupService.checkOwnership(username, groupId))
+        if(!groupService.checkOwnership(username, groupIdLong))
             throw new BadAuthorizationException("You are not authorized to delete this group!");
-        return groupService.delete(groupId);
+        return groupService.delete(groupIdLong);
     }
 
     @PostMapping("/{groupId}/{username}")

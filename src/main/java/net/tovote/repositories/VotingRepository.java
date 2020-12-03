@@ -15,5 +15,4 @@ public interface VotingRepository extends JpaRepository<Voting, Long> {
 
     @Query(value = "SELECT * FROM votings WHERE user_username = :username", nativeQuery = true)
     List<Voting> findAllForUserName(@Param("username") String username);
-
 }

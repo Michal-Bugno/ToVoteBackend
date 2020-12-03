@@ -23,4 +23,5 @@ public interface VotingService {
     void submitVote(long votingId, Vote vote) throws VotingNotFoundException, AlreadyVotedException;
     void update(Voting voting) throws VotingNotFoundException;
     Voting deleteById(long id) throws VotingNotFoundException;
+    Set<Voting> getAllAuthorizedForUsername(String username) throws UserNotFoundException;
 }

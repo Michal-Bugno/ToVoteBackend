@@ -40,6 +40,11 @@ public class VotingController {
         return votingService.getAllForUsername(TokenDecoder.getUsername(token));
     }
 
+    @GetMapping("/authorized")
+    public Set<Voting> getAuthorizedVotingsByUsername(@RequestHeader(name = "Authorization") String token) throws UserNotFoundException{
+        return votingService.getAllAuthorizedForUsername(TokenDecoder.getUsername(token));
+    }
+
     @PostMapping
     public Voting addVoting(@RequestBody Voting voting, @RequestHeader(name = "Authorization") String token) throws UserNotFoundException{
         String username = TokenDecoder.getUsername(token);
@@ -93,6 +98,8 @@ public class VotingController {
         }
         if(!votingService.checkOwnership(username, votingIdLong))
             throw new BadAuthorizationException("You are not authorized to add groups to this voting!");
+        if(!(groupService.checkOwnership(username, groupIdLong)))
+            throw new BadAuthorizationException("You can only add your own groups to voting!");
         Group group = votingService.addGroup(votingIdLong, groupIdLong);
         return group;
     }
